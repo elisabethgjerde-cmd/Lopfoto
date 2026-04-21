@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Løpsfoto – Bildetekstgenerator (gratis)</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #18181a;
+  --ink2: #44444a;
+  --ink3: #888892;
+  --paper: #f6f4ef;
+  --paper2: #eeece6;
+  --paper3: #e2dfd7;
+  --white: #ffffff;
+  --red: #c0392b;
+  --red2: #e74c3c;
+  --green: #27ae60;
+  --border: rgba(0,0,0,0.10);
+  --r: 5px;
+  --ff: 'Source Sans 3', system-ui, sans-serif;
+  --fd: 'Playfair Display', Georgia, serif;
+}
+
+body {
+  font-family: var(--ff);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0 2rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--red);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+header h1 {
+  font-family: var(--fd);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--green);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* ── LAYOUT ── */
+.wrap { max-width: 1060px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+/* ── STEPS ── */
+.steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+@media(max-width:680px){ .steps { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.25rem 1.5rem;
+}
+
+.card-title {
+  font-family: var(--fd);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--red);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: var(--ff);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── EVENT ROW ── */
+.event-row {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.field-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 180px;
+}
+
+.field-group label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  white-space: nowrap;
+}
+
+input[type=text], input[type=date] {
+  border: 1px solid var(--paper3);
+  border-radius: var(--r);
+  padding: 0.45rem 0.7rem;
+  font-family: var(--ff);
+  font-size: 0.85rem;
+  background: var(--paper);
+  color: var(--ink);
+  width: 100%;
+  transition: border-color .15s;
+}
+input:focus { outline: none; border-color: var(--red); background: white; }
+input[type=date] { max-width: 145px; }
+
+/* ── DROP ZONE ── */
+.drop {
+  border: 2px dashed var(--paper3);
+  border-radius: var(--r);
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  color: var(--ink3);
+  font-size: 0.83rem;
+  transition: border-color .15s, background .15s;
+}
+.drop:hover, .drop.over { border-color: var(--red); background: #fdf5f0; color: var(--ink2); }
+.drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.drop .icon { font-size: 1.8rem; display: block; margin-bottom: 0.3rem; }
+
+/* ── RUNNER TABLE ── */
+.runner-scroll {
+  max-height: 160px;
+  overflow-y: auto;
+  margin-top: 0.75rem;
+  border: 1px solid var(--paper3);
+  border-radius: var(--r);
+}
+.runner-scroll table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+.runner-scroll th { background: var(--paper2); padding: 5px 8px; text-align: left; font-weight: 700; position: sticky; top: 0; }
+.runner-scroll td { padding: 4px 8px; border-top: 1px solid var(--paper3); color: var(--ink2); }
+.runner-scroll tr:hover td { background: #fdf5f0; }
+
+.hint { font-size: 0.75rem; color: var(--ink3); margin-bottom: 0.6rem; }
+
+textarea.paste {
+  width: 100%;
+  margin-top: 0.6rem;
+  border: 1px solid var(--paper3);
+  border-radius: var(--r);
+  padding: 0.45rem 0.6rem;
+  font-size: 0.76rem;
+  font-family: monospace;
+  height: 80px;
+  resize: vertical;
+  background: var(--paper);
+  color: var(--ink);
+}
+textarea.paste:focus { outline: none; border-color: var(--red); background: white; }
+
+/* ── GENERATE BAR ── */
+.gen-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.3rem;
+  border-radius: var(--r);
+  border: none;
+  font-family: var(--ff);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  white-space: nowrap;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+
+.btn-primary { background: var(--red); color: white; }
+.btn-primary:hover { background: var(--red2); }
+.btn-ghost { background: var(--paper2); color: var(--ink2); }
+.btn-ghost:hover { background: var(--paper3); }
+.btn-sm { padding: 0.3rem 0.8rem; font-size: 0.76rem; }
+
+/* ── PROGRESS ── */
+.progress-wrap { display: none; width: 220px; }
+.progress-track { height: 4px; background: var(--paper2); border-radius: 2px; overflow: hidden; }
+.progress-bar { height: 100%; background: var(--red); border-radius: 2px; transition: width .25s ease; width: 0; }
+.status { font-size: 0.78rem; color: var(--ink3); margin-bottom: 3px; }
+.status.active { color: var(--red); }
+
+/* ── RESULTS ── */
+.results { display: none; }
+.results.show { display: block; }
+
+.results-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.results-hd h2 { font-family: var(--fd); font-size: 1.2rem; }
+.results-actions { display: flex; gap: 0.5rem; }
+
+/* ── PHOTO GRID ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.photo-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.photo-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  background: var(--paper2);
+}
+
+.photo-placeholder {
+  width: 100%;
+  height: 200px;
+  background: var(--paper2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-body { padding: 0.9rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.6rem; }
+
+.photo-name { font-size: 0.72rem; color: var(--ink3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.bibs { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.bib { font-size: 0.68rem; font-weight: 700; font-family: monospace; padding: 2px 7px; border-radius: 20px; background: var(--paper2); color: var(--ink2); }
+.bib.matched { background: #d5f0e0; color: #1a7a40; }
+
+.caption-area {
+  width: 100%;
+  border: 1px solid var(--paper3);
+  border-radius: var(--r);
+  padding: 0.55rem 0.7rem;
+  font-family: var(--ff);
+  font-size: 0.83rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--paper);
+  resize: vertical;
+  min-height: 65px;
+  flex: 1;
+}
+.caption-area:focus { outline: none; border-color: var(--red); background: white; }
+
+/* ── SPINNER ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid var(--paper3);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+.loading-row {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.78rem; color: var(--red); padding: 0.5rem 0;
+}
+
+/* ── OCR NOTICE ── */
+.notice {
+  background: #fff8e6;
+  border: 1px solid #f5d87a;
+  border-radius: var(--r);
+  padding: 0.7rem 1rem;
+  font-size: 0.78rem;
+  color: #5a4000;
+  margin-bottom: 1.25rem;
+}
+
+.img-count { font-size: 0.8rem; color: var(--ink3); margin-top: 0.4rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Løpsfoto — Bildetekstgenerator</h1>
+  <span class="badge">100% gratis · ingen API</span>
+</header>
+
+<div class="wrap">
+
+  <div class="notice">
+    ℹ️ Denne versjonen bruker <strong>Tesseract.js</strong> — OCR som kjører direkte i nettleseren. Ingen bilder sendes til noen ekstern server. Fungerer best på klare, tydelige startnumre.
+  </div>
+
+  <div class="event-row">
+    <div class="field-group">
+      <label>Løpsnavn</label>
+      <input type="text" id="eventName" placeholder="f.eks. Holmenkollstafetten 2025">
+    </div>
+    <div class="field-group" style="flex:0">
+      <label>Dato</label>
+      <input type="date" id="eventDate">
+    </div>
+  </div>
+
+  <div class="steps">
+
+    <!-- STEP 1: CSV -->
+    <div class="card">
+      <div class="card-title"><span class="num">1</span> Deltagerliste</div>
+      <p class="hint">CSV: <code>startnummer, fornavn, etternavn, klubb</code></p>
+      <div class="drop" id="csvDrop">
+        <input type="file" id="csvFile" accept=".csv,.txt">
+        <span class="icon">📋</span>
+        Slipp CSV-fil her, eller klikk
+      </div>
+      <textarea class="paste" id="csvPaste" placeholder="Eller lim inn CSV:&#10;1,Ole,Hansen,IL Gneist&#10;2,Kari,Nordmann,Lyn Ski&#10;23,Per,Johansen,BUL"></textarea>
+      <div id="runnerWrap"></div>
+    </div>
+
+    <!-- STEP 2: IMAGES -->
+    <div class="card">
+      <div class="card-title"><span class="num">2</span> Løpsbilder</div>
+      <p class="hint">Velg ett eller flere bilder. Tesseract leser startnumrene automatisk.</p>
+      <div class="drop" id="imgDrop">
+        <input type="file" id="imgFiles" accept="image/*" multiple>
+        <span class="icon">📷</span>
+        Slipp bilder her, eller klikk for å velge
+      </div>
+      <div class="img-count" id="imgCount"></div>
+    </div>
+
+  </div>
+
+  <div class="gen-bar">
+    <button class="btn btn-primary" id="genBtn" onclick="generateAll()">
+      ▶ Generer bildetekster
+    </button>
+    <div>
+      <div class="status" id="statusTxt"></div>
+      <div class="progress-wrap" id="progWrap">
+        <div class="progress-track"><div class="progress-bar" id="progBar"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="results-hd">
+      <h2>Bildetekster</h2>
+      <div class="results-actions">
+        <button class="btn btn-ghost btn-sm" onclick="copyAll()">📋 Kopier alle</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportTxt()">⬇ Last ned .txt</button>
+      </div>
+    </div>
+    <div class="grid" id="photoGrid"></div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+
+// ── STATE ──
+let runners = {};   // bib -> {bib, firstName, lastName, club}
+let images  = [];   // File[]
+let worker  = null;
+
+// ── INIT TESSERACT ──
+async function getWorker() {
+  if (worker) return worker;
+  setStatus('Laster OCR-motor (første gang tar litt tid)…', true);
+  worker = await Tesseract.createWorker('nor+eng', 1, {
+    logger: () => {}
+  });
+  await worker.setParameters({
+    tessedit_char_whitelist: '0123456789',
+    tessedit_pageseg_mode: '11',
+  });
+  return worker;
+}
+
+// ── DRAG & DROP ──
+function makeDrop(zoneId, handler) {
+  const el = document.getElementById(zoneId);
+  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('over'); });
+  el.addEventListener('dragleave', () => el.classList.remove('over'));
+  el.addEventListener('drop', e => { e.preventDefault(); el.classList.remove('over'); handler(e.dataTransfer.files); });
+}
+
+makeDrop('csvDrop', files => { if (files[0]) readCSV(files[0]); });
+makeDrop('imgDrop', files => handleImages(files));
+
+document.getElementById('csvFile').addEventListener('change', e => { if (e.target.files[0]) readCSV(e.target.files[0]); });
+document.getElementById('imgFiles').addEventListener('change', e => handleImages(e.target.files));
+document.getElementById('csvPaste').addEventListener('input', e => parseCSV(e.target.value));
+
+// ── CSV ──
+function readCSV(file) {
+  const r = new FileReader();
+  r.onload = e => {
+    document.getElementById('csvPaste').value = e.target.result;
+    parseCSV(e.target.result);
+  };
+  r.readAsText(file);
+}
+
+function parseCSV(text) {
+  runners = {};
+  let count = 0;
+  for (const line of text.trim().split('\n')) {
+    const parts = line.split(',').map(s => s.trim().replace(/^["']|["']$/g, ''));
+    const bib = parts[0];
+    if (!bib || !/^\d+$/.test(bib)) continue;
+    runners[bib] = { bib, firstName: parts[1]||'', lastName: parts[2]||'', club: parts[3]||'' };
+    count++;
+  }
+  renderRunnerTable(count);
+}
+
+function renderRunnerTable(count) {
+  const wrap = document.getElementById('runnerWrap');
+  const keys = Object.keys(runners);
+  if (!keys.length) { wrap.innerHTML = ''; return; }
+  const rows = keys.slice(0,300).map(k => {
+    const r = runners[k];
+    return `<tr><td>${r.bib}</td><td>${r.firstName} ${r.lastName}</td><td>${r.club}</td></tr>`;
+  }).join('');
+  wrap.innerHTML = `<div class="runner-scroll"><table>
+    <thead><tr><th>#</th><th>Navn</th><th>Klubb</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+  setStatus(`${count} deltakere lastet inn`, false);
+}
+
+// ── IMAGES ──
+function handleImages(files) {
+  images = Array.from(files).filter(f => f.type.startsWith('image/'));
+  document.getElementById('imgCount').textContent =
+    images.length ? `${images.length} bilde${images.length>1?'r':''} valgt` : '';
+}
+
+// ── STATUS / PROGRESS ──
+function setStatus(msg, active=false) {
+  const el = document.getElementById('statusTxt');
+  el.textContent = msg;
+  el.className = 'status' + (active ? ' active' : '');
+}
+
+function setProgress(cur, tot) {
+  const wrap = document.getElementById('progWrap');
+  if (!tot) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  document.getElementById('progBar').style.width = Math.round(cur/tot*100) + '%';
+}
+
+// ── MAIN GENERATE ──
+async function generateAll() {
+  if (!images.length) { alert('Velg minst ett bilde først.'); return; }
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+
+  const grid = document.getElementById('photoGrid');
+  grid.innerHTML = '';
+  document.getElementById('results').classList.add('show');
+
+  const eventName = document.getElementById('eventName').value.trim() || 'løpet';
+  const eventDate = document.getElementById('eventDate').value;
+  const eventLabel = eventName + (eventDate ? ` (${fmtDate(eventDate)})` : '');
+
+  setProgress(0, images.length);
+
+  try {
+    const w = await getWorker();
+
+    for (let i = 0; i < images.length; i++) {
+      setStatus(`Behandler bilde ${i+1} av ${images.length}…`, true);
+      const card = makeLoadingCard(images[i].name);
+      grid.appendChild(card);
+      await processImage(images[i], card, w, eventLabel);
+      setProgress(i+1, images.length);
+    }
+
+    setStatus(`Ferdig! ${images.length} bilde${images.length>1?'r':''} behandlet.`);
+  } catch(err) {
+    setStatus('Feil: ' + err.message);
+    console.error(err);
+  }
+
+  btn.disabled = false;
+}
+
+// ── PROCESS ONE IMAGE ──
+async function processImage(file, card, w, eventLabel) {
+  const url = URL.createObjectURL(file);
+
+  // Load image into canvas for preprocessing
+  const img = new Image();
+  await new Promise(res => { img.onload = res; img.src = url; });
+
+  // Helper: run OCR on a canvas and extract candidate bib numbers
+  async function ocrCanvas(canvas) {
+    try {
+      const result = await w.recognize(canvas);
+      const text = result.data.text || '';
+      return text.match(/\d+/g)?.map(n => n.replace(/^0+/, '') || '0')
+        .filter(n => n.length >= 1 && n.length <= 4) || [];
+    } catch(e) { return []; }
+  }
+
+  // Pass 1: original image scaled up 2x
+  const c1 = document.createElement('canvas');
+  c1.width = img.width * 2; c1.height = img.height * 2;
+  const x1 = c1.getContext('2d');
+  x1.drawImage(img, 0, 0, c1.width, c1.height);
+  const nums1 = await ocrCanvas(c1);
+  updateLoadingMsg(card, 'Forbedrer bilde for OCR…');
+
+  // Pass 2: high contrast + brightness
+  const c2 = document.createElement('canvas');
+  c2.width = img.width * 2; c2.height = img.height * 2;
+  const x2 = c2.getContext('2d');
+  x2.filter = 'contrast(2.2) brightness(1.15) grayscale(1)';
+  x2.drawImage(img, 0, 0, c2.width, c2.height);
+  const nums2 = await ocrCanvas(c2);
+  updateLoadingMsg(card, 'Analyserer startnumre…');
+
+  // Pass 3: crop centre 60% of image (where bib numbers usually are)
+  const c3 = document.createElement('canvas');
+  const cx = img.width * 0.2, cy = img.height * 0.1;
+  const cw = img.width * 0.6, ch = img.height * 0.8;
+  c3.width = cw * 2; c3.height = ch * 2;
+  const x3 = c3.getContext('2d');
+  x3.filter = 'contrast(2.0) brightness(1.1) grayscale(1)';
+  x3.drawImage(img, cx, cy, cw, ch, 0, 0, c3.width, c3.height);
+  const nums3 = await ocrCanvas(c3);
+
+  // Combine all found numbers, deduplicate
+  const allNums = [...new Set([...nums1, ...nums2, ...nums3])];
+
+  // Only keep numbers that actually exist in the runner list (if list is loaded)
+  const hasRunners = Object.keys(runners).length > 0;
+  let bibs, matched;
+
+  if (hasRunners) {
+    // Prefer numbers that match the runner list
+    matched = allNums.filter(b => runners[b]).map(b => runners[b]);
+    // bibs = matched bib numbers only (avoids showing random numbers from image)
+    bibs = matched.map(r => r.bib);
+  } else {
+    // No runner list — show all detected numbers
+    bibs = allNums;
+    matched = [];
+  }
+
+  // Build caption
+  const caption = buildCaption(matched, bibs, eventLabel, hasRunners);
+
+  // Render card
+  renderCard(card, url, file.name, bibs, matched, caption);
+}
+
+function updateLoadingMsg(card, msg) {
+  const row = card.querySelector('.loading-row');
+  if (row) row.innerHTML = `<div class="spinner"></div> ${msg}`;
+}
+
+// ── BUILD CAPTION ──
+function buildCaption(matched, bibs, eventLabel, hasRunners) {
+  // No matches at all
+  if (matched.length === 0) {
+    if (bibs.length > 0 && !hasRunners) {
+      return `Startnummer ${bibs.join(', ')} under ${eventLabel}. (Last opp deltagerliste for å få navn automatisk.)`;
+    }
+    if (bibs.length > 0 && hasRunners) {
+      return `Startnummer ${bibs.join(', ')} ble funnet, men er ikke i deltagerlisten. Fyll inn navn manuelt.`;
+    }
+    return `Bilde fra ${eventLabel}.\n\n(Startnummer ikke gjenkjent automatisk — skriv inn bildetekst manuelt.)`;
+  }
+
+  if (matched.length === 1) {
+    const r = matched[0];
+    const club = r.club ? ` fra ${r.club}` : '';
+    return `${r.firstName} ${r.lastName}${club} under ${eventLabel}.`;
+  }
+
+  // Multiple runners
+  const names = matched.map(r => {
+    let s = `${r.firstName} ${r.lastName}`.trim();
+    if (r.club) s += ` (${r.club})`;
+    return s;
+  });
+  const last = names.pop();
+  return `${names.join(', ')} og ${last} under ${eventLabel}.`;
+}
+
+// ── CARD BUILDERS ──
+function makeLoadingCard(name) {
+  const div = document.createElement('div');
+  div.className = 'photo-card';
+  div.innerHTML = `
+    <div class="photo-placeholder"><div class="spinner"></div></div>
+    <div class="photo-body">
+      <div class="photo-name">${esc(name)}</div>
+      <div class="loading-row"><div class="spinner"></div> Kjører OCR…</div>
+    </div>`;
+  return div;
+}
+
+function renderCard(card, url, name, bibs, matched, caption) {
+  const bibHTML = bibs.map(b => {
+    const ok = !!runners[b];
+    return `<span class="bib${ok?' matched':''}">#${b}${ok?' ✓':''}</span>`;
+  }).join('');
+
+  card.innerHTML = `
+    <img src="${url}" alt="${esc(name)}" loading="lazy">
+    <div class="photo-body">
+      <div class="photo-name">${esc(name)}</div>
+      ${bibHTML ? `<div class="bibs">${bibHTML}</div>` : ''}
+      <textarea class="caption-area">${esc(caption)}</textarea>
+      <button class="btn btn-ghost btn-sm" onclick="copyOne(this)">Kopier tekst</button>
+    </div>`;
+}
+
+// ── COPY / EXPORT ──
+function copyOne(btn) {
+  const ta = btn.previousElementSibling;
+  navigator.clipboard.writeText(ta.value).then(() => {
+    btn.textContent = '✓ Kopiert!';
+    setTimeout(() => btn.textContent = 'Kopier tekst', 1600);
+  });
+}
+
+function copyAll() {
+  const texts = [...document.querySelectorAll('.caption-area')]
+    .map((ta, i) => `Bilde ${i+1}:\n${ta.value}`).join('\n\n');
+  navigator.clipboard.writeText(texts).then(() => alert('Alle bildetekster kopiert til utklippstavlen!'));
+}
+
+function exportTxt() {
+  const name = document.getElementById('eventName').value.trim() || 'løp';
+  const cards = [...document.querySelectorAll('.photo-card')];
+  let out = `BILDETEKSTER – ${name.toUpperCase()}\n${'─'.repeat(40)}\n\n`;
+  cards.forEach((c, i) => {
+    const fn = c.querySelector('.photo-name')?.textContent || `Bilde ${i+1}`;
+    const txt = c.querySelector('.caption-area')?.value || '';
+    out += `${i+1}. ${fn}\n${txt}\n\n`;
+  });
+  const blob = new Blob([out], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `bildetekster-${name.toLowerCase().replace(/\s+/g,'-')}.txt`;
+  a.click();
+}
+
+// ── HELPERS ──
+function fmtDate(s) {
+  if (!s) return '';
+  return new Date(s).toLocaleDateString('nb-NO', { day:'numeric', month:'long', year:'numeric' });
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+</script>
+</body>
+</html>
